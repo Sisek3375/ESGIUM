@@ -15,6 +15,7 @@ pub struct Block {
 pub struct Blockchain {
     blocks: Vec<Block>,
 }
+
 impl Block {
     pub fn new_block(data: String, prev_block_hash: String, height: usize) -> Result<Block> {
     let timestamp : u128 = SystemTime::now()
