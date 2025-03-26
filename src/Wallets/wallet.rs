@@ -1,9 +1,17 @@
-use bitcoincrash_addr::{Address, HashType, Scheme};
+use super::*;
+use bincode::{deserialize, serialize};
+use bitcoincash_addr::*;
 use crypto::digest::Digest;
 use crypto::ed25519;
-use rand::RngCore;
+use crypto::ripemd160::Ripemd160;
+use crypto::sha2::Sha256;
+use rand::{Rng, RngCore};
+use serde::{Deserialize, Serialize};
+use sled;
+use std::collections::HashMap;
+use log::info;
 use rand::rngs::OsRng;
-use serde::{Serialize, Deserialize};
+
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 
 // Structure d'un wallet
@@ -16,9 +24,9 @@ impl Wallet {
     fn new() -> Self {
         let mut key: [u8; 32] = [0; 32];
         OsRng.fill_bytes(&mut key);
-        let (secrect_key, public_key) = ed25519::keypair(&key);
+        let (secret_key, public_key) = ed25519::keypair(&key);
 
-        let secret_key: Vec<u8> = secrect_key.to_vec();
+        let secret_key: Vec<u8> = secret_key.to_vec();
         let public_key: Vec<u8> = public_key.to_vec();
     
         Wallet{
@@ -31,7 +39,7 @@ impl Wallet {
     let mut pub_hash: Vec<u8> = self.public_key.clone();
     hash_pub_key(&mut pub_hash);
 
-    let address = Adress {
+    let address = Address {
         body: pub_hash,
         scheme: Scheme::Base58, // Base58 supprime les caractères 0, O, 1 et I afin d'éviter de les confondre
         hash_type: HashType::Script,
@@ -67,7 +75,7 @@ impl Wallets {
             wallets: HashMap::<String, Wallet>::new(),
         };
 
-        let db:Db = sled::open("data/wallets")?;
+        let db = sled::open("data/wallets")?;
         for item in db.into_iter() {
             let i = item?;
             let address = String::from_utf8(i.0.to_vec())?;
@@ -92,7 +100,7 @@ impl Wallets {
             addresses.push(address.clone())
         }
         addresses
-}
+    }
 
 pub fn get_wallet(&self, address: &str) -> Option<&Wallet> {
     self.wallets.get(address)
@@ -105,11 +113,9 @@ pub fn save_all(&self) -> Result<()> {
         let data = bincode::serialize(wallet)?;
         db.insert(address, data)?;
     }
-
     db.flush()?;
     drop(db);
     Ok(())
-}
-
+  }
 
 }
