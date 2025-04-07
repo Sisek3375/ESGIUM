@@ -1,9 +1,11 @@
+use crate::errors::Result;
 use std::time::SystemTime;
 use crypto::digest::Digest;
 use crypto::sha2::Sha256;
 use log::info;
-
 const TARGET_HEXT:usize = 4;
+use serde::{Serialize, Deserialize};
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Block {
     timestamp: u128,
     transactions: String,
@@ -17,20 +19,9 @@ pub struct Blockchain {
 }
 
 impl Block {
-    pub fn new_block(data: String, prev_block_hash: String, height: usize) -> Result<Block> {
-    let timestamp : u128 = SystemTime::now()
-            .duration_since( SystemTime::UNIX_EPOCH )?
-            .as_millis();
-        let mut block = Block {
-        timestamp: timestamp,
-        transactions: data,
-        prev_block_hash: prev_block_hash,
-        hash: String::new(),
-        height: height,
-        nonce: 0, //Changement lors du minage --> 0
-        };
-        block.run_proof_if_work()?;
-        Ok(block)
+    pub(crate) fn get_prev_hash(&self) -> String{
+        self.prev_block_hash.clone()
+    }
     }
     fn run_proof_if_work(&mut self) -> Result<()> {
         info!("Mining the block...");
