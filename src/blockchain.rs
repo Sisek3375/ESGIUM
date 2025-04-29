@@ -7,6 +7,8 @@ pub struct Blockchain {
     current_hash: String,
     db: sled::Db,
 }
+
+// Structure de la bc
 pub struct BlockchainIter<'a> {
     current_hash: String,
     bc: &'a Blockchain,
@@ -50,6 +52,7 @@ impl Blockchain {
         Ok(())
     }
 
+    // Creation d'un iterateur qui part du bloc le plus récent
 pub fn iter(&self) -> BlockchainIter {
     BlockchainIter {
         current_hash: &self.current_hash.clone(),
@@ -62,6 +65,7 @@ pub fn iter(&self) -> BlockchainIter {
 
 }
 
+// implementation de l'iterateur
 impl<'a> Iterator for BlockchainIter<'a> {
     type Item = Block;
 
