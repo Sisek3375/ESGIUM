@@ -1,6 +1,3 @@
-a simple blockchain demo for learning 
-
-
 # blockchain-rust - ESGIUM
 
 ## usage
